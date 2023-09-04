@@ -44,7 +44,18 @@ func main() {
 	defer client.Close()
 
 	var employees []Employee
-	err = client.Query(ctx, "SELECT Employee{id, first_name, last_name, job_title: {name}, departements:{name}}", &employees)
+	err = client.Query(ctx, `
+		SELECT Employee { 
+			id, 
+			first_name, 
+			last_name, 
+			job_title: {
+				name
+			}, 
+			departements:{
+				name
+			}
+		}`, &employees)
 	if err != nil {
 		log.Fatal(err)
 	}
