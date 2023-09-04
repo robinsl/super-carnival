@@ -4,27 +4,28 @@ import (
 	"context"
 	"fmt"
 	"github.com/edgedb/edgedb-go"
+	"github.com/google/uuid"
 	"log"
 	"strings"
 )
 
 type JobTitle struct {
 	edgedb.Optional
-	Id   edgedb.OptionalUUID `edgedb:"id"`
-	Name string              `edgedb:"name"`
+	Id   uuid.UUID `edgedb:"id"`
+	Name string    `edgedb:"name"`
 }
 
 type Department struct {
-	Id        edgedb.OptionalUUID `edgedb:"id"`
-	Name      string              `edgedb:"name"`
-	Employees []Employee          `edgedb:"employees"`
+	Id        uuid.UUID  `edgedb:"id"`
+	Name      string     `edgedb:"name"`
+	Employees []Employee `edgedb:"employees"`
 }
 
 type Employee struct {
-	Id        edgedb.OptionalUUID `edgedb:"id"`
-	FirstName string              `edgedb:"first_name"`
-	LastName  string              `edgedb:"last_name"`
-	BirthDate string              `edgedb:"birthday"`
+	Id        uuid.UUID `edgedb:"id"`
+	FirstName string    `edgedb:"first_name"`
+	LastName  string    `edgedb:"last_name"`
+	BirthDate string    `edgedb:"birthday"`
 
 	JobTitle    JobTitle     `edgedb:"job_title"`
 	Departments []Department `edgedb:"departements"`
