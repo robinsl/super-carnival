@@ -4,28 +4,27 @@ import (
 	"context"
 	"fmt"
 	"github.com/edgedb/edgedb-go"
-	"github.com/google/uuid"
 	"log"
 	"strings"
 )
 
 type JobTitle struct {
 	edgedb.Optional
-	Id   uuid.UUID `edgedb:"id"`
-	Name string    `edgedb:"name"`
+	Id   edgedb.OptionalUUID `edgedb:"id"`
+	Name string              `edgedb:"name"`
 }
 
 type Department struct {
-	Id        uuid.UUID  `edgedb:"id"`
-	Name      string     `edgedb:"name"`
-	Employees []Employee `edgedb:"employees"`
+	Id        edgedb.OptionalUUID `edgedb:"id"`
+	Name      string              `edgedb:"name"`
+	Employees []Employee          `edgedb:"employees"`
 }
 
 type Employee struct {
-	Id        uuid.UUID `edgedb:"id"`
-	FirstName string    `edgedb:"first_name"`
-	LastName  string    `edgedb:"last_name"`
-	BirthDate string    `edgedb:"birthday"`
+	Id        edgedb.OptionalUUID `edgedb:"id"`
+	FirstName string              `edgedb:"first_name"`
+	LastName  string              `edgedb:"last_name"`
+	BirthDate string              `edgedb:"birthday"`
 
 	JobTitle    JobTitle     `edgedb:"job_title"`
 	Departments []Department `edgedb:"departements"`
@@ -45,7 +44,7 @@ func main() {
 	defer client.Close()
 
 	var employees []Employee
-	err = client.Query(ctx, "SELECT Employee{first_name, last_name, job_title: {name}, departements:{name}}", &employees)
+	err = client.Query(ctx, "SELECT Employee{id, first_name, last_name, job_title: {name}, departements:{name}}", &employees)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -56,6 +55,8 @@ func main() {
 			departmentNames[i] = department.Name
 		}
 		departmentsConcatenated := strings.Join(departmentNames, ", ")
+		id, _ := employee.Id.Get()
+		log.Printf("id: %s\n", id.String())
 		log.Printf("Employee: %s %s\n", employee.FirstName, employee.LastName)
 		log.Printf("Job Title: %s\n", employee.JobTitle.Name)
 		log.Printf("Departments: %s\n", departmentsConcatenated)
