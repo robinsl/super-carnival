@@ -1,10 +1,10 @@
 {{ template "header" . }}
     {{ template "NavBar" . }}
-    <div class="container-xxl my-md-4 bd-layout" aria-label="Main navigation">
+    <div class="container-xxl my-md-4 bd-layout" aria-label="Main navigation" x-data="{ count: 0 }">
         <h1>Hello World!</h1>
         {{ block "IndexContent" . }}
 
-        <div id="IndexContent">
+        <div id="IndexContent" x-effect="count++;console.log('Count: ', count)">
             <h2 id="IndexTitle">This is the {{.title}}</h2>
             <i>Last Reload: <b>{{.time}}</b></i>
         </div>
