@@ -2,15 +2,16 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"github.com/edgedb/edgedb-go"
 	"log"
-	"strings"
+	"time"
+
+	"github.com/edgedb/edgedb-go"
+	"github.com/gin-gonic/gin"
 )
 
 type JobTitle struct {
 	edgedb.Optional
-	Id   edgedb.OptionalUUID `edgedb:"id"`
+	Id   edgedb.OptionalUUID `json:"id,omitempty" edgedb:"id"`
 	Name string              `edgedb:"name"`
 }
 
@@ -21,10 +22,10 @@ type Department struct {
 }
 
 type Employee struct {
-	Id        edgedb.OptionalUUID `edgedb:"id"`
-	FirstName string              `edgedb:"first_name"`
-	LastName  string              `edgedb:"last_name"`
-	BirthDate string              `edgedb:"birthday"`
+	Id        edgedb.OptionalUUID      `edgedb:"id"`
+	FirstName string                   `edgedb:"first_name"`
+	LastName  string                   `edgedb:"last_name"`
+	BirthDate edgedb.OptionalLocalDate `edgedb:"birthday"`
 
 	JobTitle    JobTitle     `edgedb:"job_title"`
 	Departments []Department `edgedb:"departements"`
@@ -38,39 +39,81 @@ func main() {
 			SecurityMode: edgedb.TLSModeInsecure,
 		},
 	})
+
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer client.Close()
 
-	var employees []Employee
-	err = client.Query(ctx, `
-		SELECT Employee { 
-			id, 
-			first_name, 
-			last_name, 
-			job_title: {
-				name
-			}, 
-			departements:{
-				name
-			}
-		}`, &employees)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, employee := range employees {
-		departmentNames := make([]string, len(employee.Departments))
-		for i, department := range employee.Departments {
-			departmentNames[i] = department.Name
+	r := gin.Default()
+	r.LoadHTMLGlob("templates/*")
+	r.GET("/", func(c *gin.Context) {
+		currentTime := time.Now()
+		if c.GetHeader("HX-Request") == "true" {
+			c.HTML(200, "IndexContent", gin.H{
+				"title": "Super Carnival",
+				"time":  currentTime.Format("2006.01.02 15:04:05"),
+			})
+		} else {
+			c.HTML(200, "index.html", gin.H{
+				"title":       "Super Carnival",
+				"time":        currentTime.Format("2006.01.02 15:04:05"),
+				"currentPage": "employees",
+			})
 		}
-		departmentsConcatenated := strings.Join(departmentNames, ", ")
-		id, _ := employee.Id.Get()
-		log.Printf("id: %s\n", id.String())
-		log.Printf("Employee: %s %s\n", employee.FirstName, employee.LastName)
-		log.Printf("Job Title: %s\n", employee.JobTitle.Name)
-		log.Printf("Departments: %s\n", departmentsConcatenated)
-		fmt.Println("------")
-	}
+	})
+
+	r.GET("/job-titles", func(c *gin.Context) {
+		currentTime := time.Now()
+		if c.GetHeader("HX-Request") == "true" {
+			c.HTML(200, "IndexContent", gin.H{
+				"title": "Super Carnival",
+				"time":  currentTime.Format("2006.01.02 15:04:05"),
+			})
+		} else {
+			c.HTML(200, "index.html", gin.H{
+				"title":       "Super Carnival",
+				"time":        currentTime.Format("2006.01.02 15:04:05"),
+				"currentPage": "job-title",
+			})
+		}
+	})
+
+	r.GET("/departments", func(c *gin.Context) {
+		currentTime := time.Now()
+		if c.GetHeader("HX-Request") == "true" {
+			c.HTML(200, "IndexContent", gin.H{
+				"title": "Super Carnival",
+				"time":  currentTime.Format("2006.01.02 15:04:05"),
+			})
+		} else {
+			c.HTML(200, "index.html", gin.H{
+				"title":       "Super Carnival",
+				"time":        currentTime.Format("2006.01.02 15:04:05"),
+				"currentPage": "departments",
+			})
+		}
+	})
+
+	r.GET("/ping", func(c *gin.Context) {
+		c.String(200, "pong")
+	})
+
+	r.GET("/employees", func(c *gin.Context) {
+		var employees []Employee
+		err = client.Query(ctx, `
+			SELECT Employee { 
+				**,
+				departements: {
+					*
+				}
+			}`, &employees)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		c.JSON(200, employees)
+	})
+
+	r.Run()
 }

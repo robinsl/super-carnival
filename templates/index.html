@@ -1,0 +1,14 @@
+{{ template "header" . }}
+    {{ template "NavBar" . }}
+    <div class="container-xxl my-md-4 bd-layout" aria-label="Main navigation">
+        <h1>Hello World!</h1>
+        {{ block "IndexContent" . }}
+
+        <div id="IndexContent">
+            <h2 id="IndexTitle">This is the {{.title}}</h2>
+            <i>Last Reload: <b>{{.time}}</b></i>
+        </div>
+        {{ end }}
+        <button hx-get="/" hx-swap="outerHTML" hx-target="#IndexContent" class="btn btn-primary btn-lg">Reload Content</button>
+    </div>
+{{ template "footer" . }}
